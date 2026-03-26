@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "WaSenac-TI",
   description: "Comunicacao interna sa sala",
+  icons: {
+    icon: "/favicon.ico", // Isso força a leitura do arquivo na pasta public
+  },
 };
 
 export default function RootLayout({
