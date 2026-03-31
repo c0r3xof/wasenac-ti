@@ -11,8 +11,17 @@ export default function RootPage() {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-[#f0f2f5] flex items-center justify-center">
-      <p className="text-gray-400 animate-pulse font-sans">Carregando WaSenac-Ti...</p>
+    <div className="min-h-screen bg-[#f0f2f5] flex flex-col items-center justify-center gap-3">
+      {/* Exibe o favicon. O caminho "/favicon.ico" aponta para a pasta public */}
+      <img 
+        src="/favicon.ico" 
+        alt="Logo" 
+        className="w-12 h-12 mb-2 animate-pulse" 
+      />
+      
+      <p className="text-gray-400 animate-pulse font-sans">
+        Carregando WaSenac-Ti...
+      </p>
     </div>
   );
 }
