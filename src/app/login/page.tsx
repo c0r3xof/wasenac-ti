@@ -33,7 +33,7 @@ export default function LoginPage() {
         <img
           src="/navegador-1024x1024.png"
           alt="Logo WaSenac-Ti"
-          className="w-16 h-16 object-contain mb-2"
+          className="w-64 h-64 object-contain mb-2"
         />
         <p className="text-gray-400 text-sm">Entre com suas credenciais</p>
   </div>
