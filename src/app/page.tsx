@@ -13,7 +13,7 @@ export default function RootPage() {
     <div className="min-h-screen bg-[#f0f2f5] flex flex-col items-center justify-center gap-3">
       {/* O ?v=1 serve para limpar o cache do navegador e mostrar o ícone novo */}
       <img 
-        src="/navegador-1024x1024.png?v=1" 
+        src="/android-chrome-512x512.png?v=1" 
         alt="Logo WaSenac-Ti" 
         className="w-[60px] h-[60px] animate-pulse object-contain" 
       />
