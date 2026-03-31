@@ -15,7 +15,7 @@ export default function RootPage() {
       <img 
         src="/favicon.ico?v=1" 
         alt="Logo WaSenac-Ti" 
-        className="w-16 h-16 animate-pulse object-contain" 
+        className="w-32 h-32 animate-pulse object-contain" 
       />
       
       <p className="text-gray-400 animate-pulse font-sans">
