@@ -28,12 +28,15 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#f0f2f5] p-4 font-sans text-gray-800">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-[#075e54] rounded-full flex items-center justify-center text-white text-3xl font-bold mb-2 shadow-lg">W</div>
-          <h1 className="text-3xl font-extrabold text-[#075e54]">WaSenac-Ti</h1>
-          <p className="text-gray-400 text-sm">Entre com suas credenciais</p>
-        </div>
+    <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
+      <div className="flex flex-col items-center mb-8">
+        <img
+          src="/navegador-1024x1024.png"
+          alt="Logo WaSenac-Ti"
+          className="w-16 h-16 object-contain mb-2"
+        />
+        <p className="text-gray-400 text-sm">Entre com suas credenciais</p>
+  </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
