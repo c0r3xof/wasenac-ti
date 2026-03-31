@@ -16,7 +16,6 @@ export default function RootPage() {
         src="/navegador-1024x1024.png"
         alt="Logo WaSenac-Ti" 
         className="w-[300px] h-[300px] animate-pulse object-contain"
-/>
       />
       
       <p className="text-gray-400 animate-pulse font-sans">
