@@ -14,7 +14,7 @@ export default function RootPage() {
     <div className="min-h-screen bg-[#f0f2f5] flex flex-col items-center justify-center gap-3">
       {/* Exibe o favicon. O caminho "/favicon.ico" aponta para a pasta public */}
       <img 
-        src="/favicon.ico" 
+        src="/logo.ico" 
         alt="Logo" 
         className="w-12 h-12 mb-2 animate-pulse" 
       />
