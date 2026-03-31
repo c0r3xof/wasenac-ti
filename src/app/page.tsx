@@ -15,7 +15,7 @@ export default function RootPage() {
       <img 
         src="/android-chrome-512x512.png?v=1" 
         alt="Logo WaSenac-Ti" 
-        className="w-1024 h-1024 animate-pulse object-contain" 
+        className="w-16 h-16 animate-pulse object-contain" 
       />
       
       <p className="text-gray-400 animate-pulse font-sans">
