@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "WaSenac-TI",
   description: "Comunicacao interna sa sala",
   icons: {
-    icon: "/logo.ico", // Isso força a leitura do arquivo na pasta public
+    icon: "/favicon.ico", // Isso força a leitura do arquivo na pasta public
   },
 };
 
