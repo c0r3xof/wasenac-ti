@@ -16,4 +16,4 @@ Funcionalidades:
 - chat em grupo
 
 Objetivo:
-Projeto desenvolvido para estudo e prática de desenvolvimento web.
+Projeto desenvolvido para estudo, conversas, dúvida com outros alunos do senac.
