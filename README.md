@@ -6,15 +6,15 @@ Sistema de chat interno desenvolvido para comunicação entre alunos dentro da s
 Tecnologias utilizadas:
 - HTML
 - CSS
-- JavaScript
-- PHP
-- MySQL
+- TypeScript (.tsx)
+- SQL
 - Next.js
+- WebSockets
+- Node.js
 
 Funcionalidades:
 - envio de mensagens em tempo real
 - identificação de usuário
 - chat em grupo
 
-Objetivo:
-Projeto desenvolvido para estudo, conversas, dúvida com outros alunos do senac.
+Objetivo: Projeto desenvolvido para estudo, para conversas e dúvidas com outros alunos do SENAC.
