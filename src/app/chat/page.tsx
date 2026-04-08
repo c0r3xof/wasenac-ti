@@ -103,7 +103,7 @@ export default function ChatPage() {
 
     // 🚫 BLOQUEIO DE LINKS (ADICIONADO)
     if (contemLink(msgInput) && !temPoder) {
-      alert("Apenas professores podem enviar links.");
+      alert("Está bloqueado de enviar links.");
       return;
     }
 
