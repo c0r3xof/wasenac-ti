@@ -7,6 +7,8 @@ export default function ChatPage() {
   const [mensagens, setMensagens] = useState<any[]>([]);
   const [texto, setTexto] = useState("");
   const [user, setUser] = useState<any>(null);
+  const [modalUsuarios, setModalUsuarios] = useState<any[]>([]); // Lista para modal
+  const [showModal, setShowModal] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -81,8 +83,8 @@ export default function ChatPage() {
       if (error) {
         alert("Erro ao buscar usuários: " + error.message);
       } else if (data) {
-        const lista = data.map((u: any) => `👤 @${u.username} -> ${u.nome_completo}`).join("\n");
-        alert("--- USUÁRIOS CADASTRADOS ---\n\n" + (lista || "Nenhum usuário encontrado."));
+        setModalUsuarios(data); // Preenche a lista do modal
+        setShowModal(true); // Mostra a modal
       }
       return true;
     }
@@ -125,6 +127,17 @@ export default function ChatPage() {
       } 
     }]);
     setTexto("");
+  }
+
+  // Função para deletar usuário diretamente do modal
+  async function deletarUsuario(username: string) {
+    if (confirm(`Deseja realmente deletar o usuário @${username}?`)) {
+      const { error } = await supabase.rpc('deletar_usuario_por_username', { username_alvo: username });
+      if (!error) {
+        setModalUsuarios(modalUsuarios.filter(u => u.username !== username));
+        alert(`Usuário @${username} deletado.`);
+      } else alert("Erro ao deletar: " + error.message);
+    }
   }
 
   return (
@@ -196,6 +209,30 @@ export default function ChatPage() {
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M1.101 21.757L23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z"></path></svg>
           </button>
         </form>
+
+        {/* Modal de Usuários */}
+        {showModal && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div className="bg-white rounded-lg shadow-lg w-96 max-h-[70vh] overflow-y-auto p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="font-bold text-lg">Usuários Registrados</h2>
+                <button className="text-red-500 font-bold" onClick={() => setShowModal(false)}>X</button>
+              </div>
+              <ul className="space-y-2">
+                {modalUsuarios.map((u) => (
+                  <li key={u.username} className="flex justify-between items-center border-b border-gray-200 pb-1">
+                    <div>
+                      <p className="font-semibold">@{u.username}</p>
+                      <p className="text-xs text-gray-500">Último login: {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString() : "Nunca"}</p>
+                    </div>
+                    <button onClick={() => deletarUsuario(u.username)} className="text-red-500 text-sm font-bold hover:underline">Deletar</button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
