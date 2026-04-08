@@ -294,38 +294,38 @@ export default function ChatPage() {
 
         {/* Modal de usuários */}
         {showModal && (
-  <div className="fixed inset-0 flex justify-center items-center z-50">
-    <div className="bg-white rounded-lg shadow-lg w-96 max-h-[70vh] overflow-y-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="font-bold text-lg">Usuários Registrados</h2>
-        <button
-          className="text-red-500 font-bold"
-          onClick={() => setShowModal(false)}
-        >
-          X
-        </button>
-      </div>
-      <ul className="space-y-2">
-        {modalUsuarios.map((u) => (
-          <li
-            key={u.username}
-            className="flex justify-between items-center border-b border-gray-200 pb-1"
-          >
-            <div>
-              <p className="font-semibold">@{u.username}</p>
-              <p className="text-xs text-gray-500">
-                Último login:{" "}
-                {u.last_sign_in_at
-                  ? new Date(u.last_sign_in_at).toLocaleString()
-                  : "Nunca"}
-              </p>
-            </div>
-            <button
-              onClick={() => deletarUsuario(u.username)}
-              className="text-red-500 text-sm font-bold hover:underline"
-            >
-              Deletar
-            </button>
+          <div className="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-40">
+            <div className="bg-white rounded-lg shadow-lg w-96 max-h-[70vh] overflow-y-auto p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="font-bold text-lg">Usuários Registrados</h2>
+                <button
+                  className="text-red-500 font-bold"
+                  onClick={() => setShowModal(false)}
+                >
+                  X
+                </button>
+              </div>
+              <ul className="space-y-2">
+                {modalUsuarios.map((u) => (
+                  <li
+                    key={u.username || u.id}
+                    className="flex justify-between items-center border-b border-gray-200 pb-1"
+                  >
+                    <div>
+                      <p className="font-semibold">@{u.username || "Sem username"}</p>
+                      <p className="text-xs text-gray-500">
+                        Último login:{" "}
+                        {u.last_sign_in_at
+                          ? new Date(u.last_sign_in_at).toLocaleString()
+                          : "Nunca"}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => deletarUsuario(u.username)}
+                      className="text-red-500 text-sm font-bold hover:underline"
+                    >
+                      Deletar
+                    </button>
                   </li>
                 ))}
               </ul>
