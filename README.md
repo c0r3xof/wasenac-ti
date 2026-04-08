@@ -9,6 +9,7 @@ Tecnologias utilizadas:
 - JavaScript
 - PHP
 - MySQL
+- Next.js
 
 Funcionalidades:
 - envio de mensagens em tempo real
