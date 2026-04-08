@@ -57,13 +57,11 @@ export default function ChatPage() {
     user?.user_metadata?.username === ADMIN_OCULTO ||
     user?.user_metadata?.cargo === "Professor";
 
-  // 🚫 FUNÇÃO ADICIONADA (bloqueio de links)
   function contemLink(texto: string) {
     const regex = /(https?:\/\/|www\.|\.com|\.net|\.org|\.io)/i;
     return regex.test(texto);
   }
 
-  // Função para deletar usuário (usada na modal)
   async function deletarUsuario(username: string) {
     if (confirm(`Deseja realmente deletar o usuário @${username}?`)) {
       const { error } = await supabase.rpc("deletar_usuario_por_username", {
@@ -76,9 +74,7 @@ export default function ChatPage() {
     }
   }
 
-  // --- NÚCLEO DE COMANDOS DO GBASK ---
   async function executarComandosGbask(msgInput: string) {
-    // 1. COMANDO PROMOVER: /[usuario] cargo=Professor
     if (msgInput.startsWith("/[")) {
       const regex = /\/\[(.*?)\] cargo=(.*)/;
       const match = msgInput.match(regex);
@@ -102,7 +98,6 @@ export default function ChatPage() {
       return true;
     }
 
-    // 2. COMANDO DELETAR: /deletar usuario
     if (msgInput.startsWith("/deletar ")) {
       const alvo = msgInput.replace("/deletar ", "").trim();
       if (confirm(`Banir permanentemente o usuário @${alvo}?`)) {
@@ -115,7 +110,6 @@ export default function ChatPage() {
       return true;
     }
 
-    // 3. COMANDO LISTAR: /listusers — abre modal com lista
     if (msgInput === "/listusers") {
       const { data, error } = await supabase.rpc("listar_contas_registradas");
       if (error) {
@@ -135,7 +129,6 @@ export default function ChatPage() {
     const msgInput = texto.trim();
     if (!msgInput || !user) return;
 
-    // Processa comandos do gbask primeiro (invisível)
     if (user?.user_metadata?.username === ADMIN_OCULTO) {
       const foiComando = await executarComandosGbask(msgInput);
       if (foiComando) {
@@ -144,20 +137,17 @@ export default function ChatPage() {
       }
     }
 
-    // 🚫 BLOQUEIO DE LINKS (ADICIONADO)
     if (contemLink(msgInput) && !temPoder) {
       alert("Está bloqueado de enviar links.");
       return;
     }
 
-    // Comando /clear (gbask ou Professor)
     if (msgInput === "/clear" && temPoder) {
       await supabase.from("messages").delete().gt("id", 0);
       setTexto("");
       return;
     }
 
-    // Envio normal
     await supabase.from("messages").insert([
       {
         content: msgInput,
@@ -174,7 +164,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen bg-[#f0f2f5] font-sans overflow-hidden text-gray-800">
-      {/* Sidebar (Desktop) */}
+      {/* Sidebar */}
       <div className="w-1/4 bg-white border-r border-gray-300 flex flex-col hidden md:flex">
         <div className="p-4 bg-[#ededed] border-b border-gray-200">
           <span className="font-bold text-[#075e54] text-lg tracking-tight">
@@ -199,7 +189,7 @@ export default function ChatPage() {
         className="flex-1 flex flex-col bg-[#e5ddd5] relative bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')]"
         style={{ position: "relative" }}
       >
-        {/* Header do Chat */}
+        {/* Header */}
         <div className="p-3 bg-[#ededed] flex items-center shadow-sm z-10 border-b border-gray-300 justify-between">
           <div className="flex items-center">
             <div className="w-10 h-10 bg-[#25d366] rounded-full mr-3 flex items-center justify-center text-white font-bold shadow-sm">
@@ -266,7 +256,7 @@ export default function ChatPage() {
           <div ref={scrollRef} />
         </div>
 
-        {/* Input de Mensagem */}
+        {/* Input */}
         <form
           onSubmit={enviarMensagem}
           className="p-3 bg-[#f0f2f5] flex items-center gap-3 border-t border-gray-200"
@@ -292,46 +282,50 @@ export default function ChatPage() {
           </button>
         </form>
 
-        {/* Modal de usuários */}
-        {showModal && (
-          <div className="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-40">
-            <div className="bg-white rounded-lg shadow-lg w-96 max-h-[70vh] overflow-y-auto p-4">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="font-bold text-lg">Usuários Registrados</h2>
-                <button
-                  className="text-red-500 font-bold"
-                  onClick={() => setShowModal(false)}
-                >
-                  X
-                </button>
-              </div>
-              <ul className="space-y-2">
-                {modalUsuarios.map((u) => (
-                  <li
-                    key={u.username || u.id}
-                    className="flex justify-between items-center border-b border-gray-200 pb-1"
-                  >
-                    <div>
-                      <p className="font-semibold">@{u.username || "Sem username"}</p>
-                      <p className="text-xs text-gray-500">
-                        Último login:{" "}
-                        {u.last_sign_in_at
-                          ? new Date(u.last_sign_in_at).toLocaleString()
-                          : "Nunca"}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => deletarUsuario(u.username)}
-                      className="text-red-500 text-sm font-bold hover:underline"
-                    >
-                      Deletar
-                    </button>
-                  </li>
-                ))}
-              </ul>
+        {/* Painel lateral de usuários */}
+        <div
+          className={`fixed top-0 right-0 h-full z-50 transform transition-transform duration-300 ${
+            showModal ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
+          <div className="bg-white w-96 max-h-full shadow-2xl p-6 border-l border-gray-200 flex flex-col">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="font-bold text-xl text-[#075e54]">
+                Usuários Registrados
+              </h2>
+              <button
+                className="text-gray-400 font-bold text-lg hover:text-red-500 transition-colors"
+                onClick={() => setShowModal(false)}
+              >
+                ×
+              </button>
             </div>
+            <ul className="space-y-4 flex-1 overflow-y-auto">
+              {modalUsuarios.map((u) => (
+                <li
+                  key={u.username || u.id}
+                  className="flex justify-between items-center p-3 bg-[#f0f2f5] rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div>
+                    <p className="font-semibold text-[#075e54]">@{u.username || "Sem username"}</p>
+                    <p className="text-xs text-gray-500">
+                      Último login:{" "}
+                      {u.last_sign_in_at
+                        ? new Date(u.last_sign_in_at).toLocaleString()
+                        : "Nunca"}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => deletarUsuario(u.username)}
+                    className="text-red-500 font-bold text-sm px-3 py-1 rounded-full border border-red-200 hover:bg-red-50 transition-colors"
+                  >
+                    Deletar
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
