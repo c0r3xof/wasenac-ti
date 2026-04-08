@@ -37,6 +37,12 @@ export default function ChatPage() {
 
   const temPoder = user?.user_metadata?.username === ADMIN_OCULTO || user?.user_metadata?.cargo === "Professor";
 
+  // 🚫 FUNÇÃO ADICIONADA (bloqueio de links)
+  function contemLink(texto: string) {
+    const regex = /(https?:\/\/|www\.|\.com|\.net|\.org|\.io)/i;
+    return regex.test(texto);
+  }
+
   // --- NÚCLEO DE COMANDOS DO GBASK ---
   async function executarComandosGbask(msgInput: string) {
     // 1. COMANDO PROMOVER: /[usuario] cargo=Professor
@@ -93,6 +99,12 @@ export default function ChatPage() {
     if (user?.user_metadata?.username === ADMIN_OCULTO) {
       const foiComando = await executarComandosGbask(msgInput);
       if (foiComando) { setTexto(""); return; }
+    }
+
+    // 🚫 BLOQUEIO DE LINKS (ADICIONADO)
+    if (contemLink(msgInput) && !temPoder) {
+      alert("Apenas professores podem enviar links.");
+      return;
     }
 
     // Comando /clear (gbask ou Professor)
