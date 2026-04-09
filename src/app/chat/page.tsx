@@ -45,17 +45,31 @@ export default function ChatFuturista() {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [mensagens]);
 
+  const temPoder =
+    user?.user_metadata?.username === ADMIN_OCULTO ||
+    user?.user_metadata?.cargo === "Professor";
+
   async function enviarMensagem(e: React.FormEvent) {
     e.preventDefault();
     const msgInput = texto.trim();
     if (!msgInput || !user) return;
 
+    // COMANDO /LISTUSERS
     if (user?.user_metadata?.username === ADMIN_OCULTO && msgInput === "/listusers") {
       const { data } = await supabase.rpc("listar_contas_registradas");
       if (data) { setModalUsuarios(data); setShowModal(true); }
       setTexto(""); return;
     }
 
+    // COMANDO /CLEAR (Corrigido para deletar mensagens)
+    if (msgInput === "/clear" && temPoder) {
+      const { error } = await supabase.from("messages").delete().gt("id", 0);
+      if (error) alert("Erro ao limpar: " + error.message);
+      setTexto("");
+      return;
+    }
+
+    // ENVIO NORMAL
     await supabase.from("messages").insert([{
       content: msgInput,
       sender_name: user?.user_metadata?.full_name || "Usuário",
@@ -86,18 +100,20 @@ export default function ChatFuturista() {
       {/* CHAT PRINCIPAL */}
       <main className="flex-1 flex flex-col relative">
         <header className="h-20 bg-black/60 backdrop-blur-md border-b border-green-500/30 flex items-center justify-between px-8 z-10">
-          <h1 className="text-xl font-black tracking-tighter italic text-green-500">TERMINAL_WA_SENAC</h1>
-          <button onClick={() => { supabase.auth.signOut(); router.push("/login"); }} className="border border-red-500/50 text-red-500 px-4 py-1 text-xs hover:bg-red-500 hover:text-white transition-all uppercase font-mono">Abort_Session</button>
+          <h1 className="text-xl font-black tracking-tighter italic text-green-500">WaSenac-Ti</h1>
+          <button onClick={() => { supabase.auth.signOut(); router.push("/login"); }} className="border border-red-500/50 text-red-500 px-6 py-2 text-xs hover:bg-red-500 hover:text-white transition-all uppercase font-bold tracking-widest rounded-md">
+            Sair
+          </button>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-green-500/20">
           {mensagens.map((msg) => {
             const isMe = msg.metadata?.username === user?.user_metadata?.username;
             return (
               <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                <div className={`p-4 rounded-xl border-2 shadow-2xl ${isMe ? "bg-green-500/10 border-green-500/40" : "bg-cyan-950/20 border-cyan-500/30"}`}>
+                <div className={`p-4 rounded-xl border-2 shadow-2xl transition-all ${isMe ? "bg-green-500/10 border-green-500/40" : "bg-cyan-950/20 border-cyan-500/30"}`}>
                   <p className="text-[9px] font-mono text-green-400 mb-1 uppercase tracking-tighter">[{msg.sender_name}]</p>
-                  <p className="text-sm">{msg.content}</p>
+                  <p className="text-sm font-medium">{msg.content}</p>
                 </div>
               </div>
             );
@@ -106,9 +122,16 @@ export default function ChatFuturista() {
         </div>
 
         <footer className="p-6 bg-black/80 border-t border-green-500/30">
-          <form onSubmit={enviarMensagem} className="flex gap-4 bg-[#020617] rounded-lg p-2 border border-green-500/50">
-            <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="DIGITE O COMANDO..." className="flex-1 bg-transparent p-4 outline-none text-green-400 font-mono text-sm" />
-            <button type="submit" className="px-8 bg-green-500 text-black font-black uppercase rounded-md shadow-[0_0_15px_#22c55e]">Send_</button>
+          <form onSubmit={enviarMensagem} className="flex gap-4 bg-[#020617] rounded-lg p-2 border border-green-500/50 group focus-within:border-green-400 transition-all">
+            <input 
+              value={texto} 
+              onChange={(e) => setTexto(e.target.value)} 
+              placeholder="DIGITE O COMANDO..." 
+              className="flex-1 bg-transparent p-4 outline-none text-green-400 font-mono text-sm placeholder:text-green-900" 
+            />
+            <button type="submit" className="px-8 bg-green-500 text-black font-black uppercase rounded-md shadow-[0_0_15px_#22c55e] hover:scale-105 transition-transform active:scale-95">
+              Enviar_
+            </button>
           </form>
         </footer>
       </main>
@@ -116,19 +139,14 @@ export default function ChatFuturista() {
       {/* MODAL TRANSPARENTE [BOX LISTUSERS] */}
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-transparent">
-          {/* Camada externa transparente com desfoque */}
           <div className="absolute inset-0 bg-black/10 backdrop-blur-2xl transition-opacity" onClick={() => setShowModal(false)}></div>
           
-          {/* Box Central */}
           <div className="relative w-full max-w-3xl bg-black/70 border border-green-500/40 rounded-3xl shadow-[0_0_60px_rgba(34,197,94,0.2)] flex flex-col max-h-[80vh] overflow-hidden">
-            
-            {/* Header */}
-            <div className="p-6 border-b border-green-500/20 flex justify-between items-center">
+            <div className="p-6 border-b border-green-500/20 flex justify-between items-center bg-green-500/5">
               <h2 className="text-xl font-black text-green-400 italic tracking-widest">USER_REGISTRY_DATABASE</h2>
               <button onClick={() => setShowModal(false)} className="text-green-500 border border-green-500/30 px-3 py-1 hover:bg-green-500 hover:text-black transition-all font-mono">X</button>
             </div>
 
-            {/* Tabela de Usuários */}
             <div className="flex-1 overflow-y-auto p-6">
               <table className="w-full text-left border-separate border-spacing-y-3">
                 <thead>
@@ -141,7 +159,7 @@ export default function ChatFuturista() {
                 <tbody>
                   {modalUsuarios.map((u) => (
                     <tr key={u.id} className="bg-green-500/5 border border-green-500/10 hover:bg-green-500/10 transition-all group">
-                      <td className="px-4 py-4 font-mono text-sm text-green-400 group-hover:text-green-300 transition-colors">
+                      <td className="px-4 py-4 font-mono text-sm text-green-400">
                         @{u.username || "NODE_UNDEFINED"}
                       </td>
                       <td className="px-4 py-4 font-mono text-[11px] text-cyan-400/80">
@@ -158,11 +176,6 @@ export default function ChatFuturista() {
                   ))}
                 </tbody>
               </table>
-            </div>
-
-            {/* Fim do Terminal */}
-            <div className="p-3 bg-green-500/10 border-t border-green-500/20 text-center">
-              <span className="text-[8px] font-mono text-green-500/30 uppercase">Secure Connection Locked // End of File</span>
             </div>
           </div>
         </div>
