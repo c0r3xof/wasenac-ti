@@ -90,13 +90,13 @@ export default function ChatFuturista() {
         <div className="p-8 flex flex-col items-center">
           <img src="/navegador-1024x1024.png" alt="Logo" className="w-32 h-32 drop-shadow-[0_0_15px_rgba(34,197,94,0.5)] mb-4" />
           <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-green-500 to-transparent mb-4"></div>
-          <p className="text-[10px] tracking-[0.3em] font-bold text-green-400 uppercase">System Status: Active</p>
+          <p className="text-[10px] tracking-[0.3em] font-bold text-green-400 uppercase">WaSenac-ti</p>
         </div>
 
         <div className="flex-1 px-4 space-y-2">
             <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-lg flex items-center gap-3">
                 <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]"></div>
-                <span className="text-sm font-mono tracking-tighter">MAIN_SERVER_CONNECTED</span>
+                <span className="text-sm font-mono tracking-tighter">Grupo</span>
             </div>
         </div>
       </div>
@@ -108,7 +108,7 @@ export default function ChatFuturista() {
         <header className="h-20 bg-black/60 backdrop-blur-md border-b border-green-500/30 flex items-center justify-between px-8 z-10">
           <div className="flex items-center gap-4">
             <div className="w-2 h-8 bg-green-500 shadow-[0_0_15px_#22c55e]"></div>
-            <h1 className="text-xl font-black tracking-tighter italic">TERMINAL_WA_SENAC</h1>
+            <h1 className="text-xl font-black tracking-tighter italic">Grupo WaSenac</h1>
           </div>
           
           <button 
@@ -165,14 +165,14 @@ export default function ChatFuturista() {
               <input
                 value={texto}
                 onChange={(e) => setTexto(e.target.value)}
-                placeholder="DIGITE O COMANDO AQUI..."
+                placeholder="DIGITE  SUA MENSAGEM..."
                 className="flex-1 bg-transparent p-4 outline-none text-green-400 font-mono text-sm placeholder:text-green-900"
               />
               <button
                 type="submit"
                 className="px-8 bg-green-500 hover:bg-green-400 text-black font-black uppercase tracking-widest transition-all rounded-md shadow-[0_0_15px_#22c55e]"
               >
-                Send_
+                Enviar
               </button>
             </div>
           </form>
