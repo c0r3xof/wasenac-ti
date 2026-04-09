@@ -95,7 +95,7 @@ export default function ChatFuturista() {
         <div className="p-8 flex flex-col items-center">
           <img src="/navegador-1024x1024.png" alt="Logo" className="w-32 h-32 drop-shadow-[0_0_15px_rgba(34,197,94,0.5)] mb-4" />
           <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-green-500 to-transparent mb-4"></div>
-          <p className="text-[10px] tracking-[0.3em] font-bold text-green-400 uppercase">WA-SENAC // OS</p>
+          <p className="text-[10px] tracking-[0.3em] font-bold text-green-400 uppercase">𝕎𝔸-𝕊𝔼ℕ𝔸ℂ </p>
         </div>
       </aside>
 
