@@ -132,7 +132,7 @@ export default function ChatFuturista() {
                   {/* LABEL DO REMETENTE */}
                   <div className="flex items-center gap-2 mb-2 px-1">
                     <span className={`text-[9px] font-mono font-bold tracking-widest uppercase ${isProf ? "text-purple-400" : "text-green-400"}`}>
-                      {isProf ? "◈ STAFF" : "◈ STUDENT"} // {msg.sender_name}
+                      {isProf ? "◈ STAFF" : "◈ Aluno"} // {msg.sender_name}
                     </span>
                   </div>
 
