@@ -11,8 +11,6 @@ export default function ChatPage() {
   const router = useRouter();
 
   const ADMIN_OCULTO = "gbask";
-
-  // Estado para modal usuários
   const [modalUsuarios, setModalUsuarios] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
 
@@ -35,13 +33,9 @@ export default function ChatPage() {
 
     const channel = supabase
       .channel("sala_geral")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "messages" },
-        () => {
-          carregarMensagens();
-        }
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => {
+        carregarMensagens();
+      })
       .subscribe();
 
     return () => {
@@ -69,8 +63,7 @@ export default function ChatPage() {
       });
       if (!error) {
         setModalUsuarios(modalUsuarios.filter((u) => u.username !== username));
-        alert(`Usuário @${username} deletado.`);
-      } else alert("Erro ao deletar: " + error.message);
+      }
     }
   }
 
@@ -81,46 +74,18 @@ export default function ChatPage() {
       if (match) {
         const target = match[1].trim();
         const role = match[2].trim();
-        const alvo = [...mensagens]
-          .reverse()
-          .find((m) => m.metadata?.username === target);
-
+        const alvo = [...mensagens].reverse().find((m) => m.metadata?.username === target);
         if (alvo?.user_id) {
-          const { error } = await supabase.rpc("promover_usuario_silencioso", {
-            id_alvo: alvo.user_id,
-            novo_cargo: role,
-          });
-          if (!error) alert(`Cargo de @${target} alterado para ${role}`);
-        } else {
-          alert("Usuário não encontrado nas mensagens recentes para capturar o ID.");
+          await supabase.rpc("promover_usuario_silencioso", { id_alvo: alvo.user_id, novo_cargo: role });
         }
       }
       return true;
     }
-
-    if (msgInput.startsWith("/deletar ")) {
-      const alvo = msgInput.replace("/deletar ", "").trim();
-      if (confirm(`Banir permanentemente o usuário @${alvo}?`)) {
-        const { error } = await supabase.rpc("deletar_usuario_por_username", {
-          username_alvo: alvo,
-        });
-        if (!error) alert(`Usuário @${alvo} removido com sucesso.`);
-        else alert("Erro: " + error.message);
-      }
-      return true;
-    }
-
     if (msgInput === "/listusers") {
-      const { data, error } = await supabase.rpc("listar_contas_registradas");
-      if (error) {
-        alert("Erro ao buscar usuários: " + error.message);
-      } else if (data) {
-        setModalUsuarios(data);
-        setShowModal(true);
-      }
+      const { data } = await supabase.rpc("listar_contas_registradas");
+      if (data) { setModalUsuarios(data); setShowModal(true); }
       return true;
     }
-
     return false;
   }
 
@@ -130,17 +95,9 @@ export default function ChatPage() {
     if (!msgInput || !user) return;
 
     if (user?.user_metadata?.username === ADMIN_OCULTO) {
-      const foiComando = await executarComandosGbask(msgInput);
-      if (foiComando) {
-        setTexto("");
-        return;
-      }
+      if (await executarComandosGbask(msgInput)) { setTexto(""); return; }
     }
-
-    if (contemLink(msgInput) && !temPoder) {
-      alert("Está bloqueado de enviar links.");
-      return;
-    }
+    if (contemLink(msgInput) && !temPoder) return;
 
     if (msgInput === "/clear" && temPoder) {
       await supabase.from("messages").delete().gt("id", 0);
@@ -148,107 +105,104 @@ export default function ChatPage() {
       return;
     }
 
-    await supabase.from("messages").insert([
-      {
-        content: msgInput,
-        sender_name: user?.user_metadata?.full_name || "Usuário",
-        user_id: user.id,
-        metadata: {
-          username: user?.user_metadata?.username,
-          cargo: user?.user_metadata?.cargo || "Aluno(a)",
-        },
+    await supabase.from("messages").insert([{
+      content: msgInput,
+      sender_name: user?.user_metadata?.full_name || "Usuário",
+      user_id: user.id,
+      metadata: {
+        username: user?.user_metadata?.username,
+        cargo: user?.user_metadata?.cargo || "Aluno(a)",
       },
-    ]);
+    }]);
     setTexto("");
   }
 
   return (
-    <div className="flex h-screen bg-[#f0f2f5] font-sans overflow-hidden text-gray-800">
-      {/* Sidebar */}
-      <div className="w-1/4 bg-white border-r border-gray-300 flex flex-col hidden md:flex">
-        <div className="p-4 bg-[#ededed] border-b border-gray-200">
-          <span className="font-bold text-[#075e54] text-lg tracking-tight">
-            WaSenac-Ti
+    <div className="flex h-screen bg-[#0a0a0c] font-sans overflow-hidden text-gray-100 selection:bg-cyan-500/30">
+      {/* Sidebar Futurista */}
+      <div className="w-1/4 bg-[#0f0f13] border-r border-cyan-900/30 flex flex-col hidden md:flex shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
+        <div className="p-6 border-b border-cyan-900/30 bg-gradient-to-br from-[#16161d] to-[#0f0f13]">
+          <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 text-2xl tracking-tighter italic">
+            SENAC_CORE.sys
           </span>
         </div>
-        <div className="flex items-center p-4 bg-[#ebebeb] border-b border-gray-200">
-          <div className="w-12 h-12 bg-[#25d366] rounded-full flex items-center justify-center text-white font-bold mr-3 shadow-sm text-xl">
-            W
+        <div className="flex items-center p-5 bg-cyan-950/10 hover:bg-cyan-950/20 transition-all cursor-pointer border-b border-cyan-900/20">
+          <div className="w-12 h-12 bg-gradient-to-tr from-cyan-600 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold mr-4 shadow-[0_0_15px_rgba(6,182,212,0.4)] rotate-3">
+            S
           </div>
           <div>
-            <p className="font-semibold text-sm">WaSenac-Ti Geral</p>
-            <p className="text-[10px] text-green-500 font-bold uppercase tracking-tight">
-              On-line
-            </p>
+            <p className="font-bold text-cyan-50 text-sm tracking-wide">NETWORK_MAIN</p>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
+              <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">
+                System Online
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Área Principal */}
-      <div
-        className="flex-1 flex flex-col bg-[#e5ddd5] relative bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')]"
-        style={{ position: "relative" }}
-      >
+      <div className="flex-1 flex flex-col bg-[#050505] relative overflow-hidden">
+        {/* Fundo Decorativo */}
+        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-600/10 rounded-full blur-[120px]"></div>
+
         {/* Header */}
-        <div className="p-3 bg-[#ededed] flex items-center shadow-sm z-10 border-b border-gray-300 justify-between">
+        <div className="p-4 bg-[#0f0f13]/80 backdrop-blur-md flex items-center z-10 border-b border-cyan-900/30 justify-between">
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-[#25d366] rounded-full mr-3 flex items-center justify-center text-white font-bold shadow-sm">
-              W
+            <div className="w-10 h-10 border border-cyan-500/50 rounded-full mr-3 flex items-center justify-center text-cyan-400 font-mono shadow-[0_0_10px_rgba(6,182,212,0.2)]">
+              &gt;_
             </div>
-            <span className="font-bold text-sm">WaSenac-Ti Geral</span>
+            <span className="font-bold text-cyan-50 tracking-widest text-sm">TERMINAL_GERAL</span>
           </div>
           <button
-            onClick={() => {
-              supabase.auth.signOut();
-              router.push("/login");
-            }}
-            className="text-[10px] font-bold text-red-500 bg-white px-3 py-1 rounded-full border border-red-200 hover:bg-red-50 transition-colors"
+            onClick={() => { supabase.auth.signOut(); router.push("/login"); }}
+            className="text-[10px] font-bold text-cyan-400 border border-cyan-400/50 px-4 py-1.5 rounded-sm hover:bg-cyan-400 hover:text-black transition-all duration-300 tracking-widest uppercase"
           >
-            SAIR
+            Disconnect
           </button>
         </div>
 
-        {/* Mensagens */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+        {/* Mensagens Estilo Terminal/Neon */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-cyan-900">
           {mensagens.map((msg) => {
             const isMe = msg.metadata?.username === user?.user_metadata?.username;
             const isProf = msg.metadata?.cargo === "Professor";
 
             return (
-              <div
-                key={msg.id}
-                className={`flex ${isMe ? "justify-end" : "justify-start"} group`}
-              >
-                <div
-                  className={`max-w-[75%] p-2 rounded-lg shadow-sm relative ${
-                    isMe ? "bg-[#dcf8c6]" : "bg-white"
-                  }`}
-                >
-                  <div className="flex justify-between items-start gap-4 mb-1">
-                    <p
-                      className={`text-[10px] font-bold ${
-                        isProf ? "text-red-600" : "text-blue-600"
-                      }`}
-                    >
+              <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"} group`}>
+                <div className={`max-w-[80%] relative group`}>
+                  {/* Nome e Cargo */}
+                  <div className={`flex items-center gap-2 mb-1 ${isMe ? "flex-row-reverse" : ""}`}>
+                    <span className={`text-[10px] font-black uppercase tracking-tighter ${isProf ? "text-purple-400" : "text-cyan-400"}`}>
                       {msg.sender_name}
-                      <span className="text-gray-300 font-normal border-l ml-1 pl-1 italic">
-                        {isProf ? "Professor" : "Aluno(a)"}
-                      </span>
+                    </span>
+                    <span className="text-[9px] text-gray-600 font-mono">
+                      [{isProf ? "STAFF" : "USER"}]
+                    </span>
+                  </div>
+
+                  {/* Balão Futurista */}
+                  <div className={`p-4 rounded-xl border transition-all duration-300 ${
+                      isMe 
+                      ? "bg-cyan-600/10 border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.1)]" 
+                      : "bg-[#16161d] border-gray-800 shadow-xl"
+                    }`}
+                  >
+                    <p className={`text-sm leading-relaxed ${isMe ? "text-cyan-50" : "text-gray-300"}`}>
+                      {msg.content}
                     </p>
+                    
                     {temPoder && (
                       <button
-                        onClick={async () =>
-                          await supabase.from("messages").delete().eq("id", msg.id)
-                        }
-                        className="opacity-0 group-hover:opacity-100 text-red-400 text-[10px] transition-all hover:scale-110"
+                        onClick={async () => await supabase.from("messages").delete().eq("id", msg.id)}
+                        className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 bg-red-900 text-white w-6 h-6 rounded-full text-[10px] flex items-center justify-center border border-red-500 transition-all hover:scale-110"
                       >
-                        🗑️
+                        ✕
                       </button>
                     )}
                   </div>
-                  <p className="text-sm text-gray-800 leading-tight pb-3 pr-6">
-                    {msg.content}
-                  </p>
                 </div>
               </div>
             );
@@ -256,71 +210,57 @@ export default function ChatPage() {
           <div ref={scrollRef} />
         </div>
 
-        {/* Input */}
-        <form
-          onSubmit={enviarMensagem}
-          className="p-3 bg-[#f0f2f5] flex items-center gap-3 border-t border-gray-200"
-        >
-          <input
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-            placeholder="Digite uma mensagem..."
-            className="flex-1 p-3 rounded-xl outline-none text-sm bg-white shadow-sm focus:ring-1 focus:ring-[#25d366]"
-          />
+        {/* Input Futurista */}
+        <form onSubmit={enviarMensagem} className="p-6 bg-[#0a0a0c] border-t border-cyan-900/30 flex items-center gap-4">
+          <div className="flex-1 relative">
+            <input
+              value={texto}
+              onChange={(e) => setTexto(e.target.value)}
+              placeholder="Aguardando comando..."
+              className="w-full bg-[#16161d] border border-cyan-900/50 p-4 rounded-lg outline-none text-sm text-cyan-50 placeholder:text-cyan-900 focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(6,182,212,0.2)] transition-all font-mono"
+            />
+          </div>
           <button
             type="submit"
-            className="bg-[#075e54] text-white p-3 rounded-full hover:bg-[#054c44] shadow-md transition-all active:scale-90"
+            className="bg-cyan-600 hover:bg-cyan-400 text-black font-bold p-4 rounded-lg shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all active:scale-95 group"
           >
-            <svg
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-              fill="currentColor"
-            >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" className="group-hover:translate-x-1 transition-transform">
               <path d="M1.101 21.757L23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z"></path>
             </svg>
           </button>
         </form>
 
-        {/* Painel lateral de usuários */}
-        <div
-          className={`fixed top-0 right-0 h-full z-50 transform transition-transform duration-300 ${
-            showModal ? "translate-x-0" : "translate-x-full"
-          }`}
-        >
-          <div className="bg-white w-96 max-h-full shadow-2xl p-6 border-l border-gray-200 flex flex-col">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="font-bold text-xl text-[#075e54]">
-                Usuários Registrados
+        {/* Modal de Usuários (Side Panel) */}
+        <div className={`fixed top-0 right-0 h-full w-full md:w-96 z-50 transform transition-transform duration-500 ease-in-out ${showModal ? "translate-x-0" : "translate-x-full"}`}>
+          <div className="bg-[#0f0f13] h-full shadow-[-10px_0_30px_rgba(0,0,0,0.9)] border-l border-cyan-900/50 p-8 flex flex-col">
+            <div className="flex justify-between items-center mb-10">
+              <h2 className="font-black text-xl text-cyan-400 tracking-tighter italic underline decoration-cyan-500/50 underline-offset-8">
+                CONNECTED_USERS
               </h2>
               <button
-                className="text-gray-400 font-bold text-lg hover:text-red-500 transition-colors"
+                className="text-cyan-900 hover:text-cyan-400 transition-colors text-3xl font-light"
                 onClick={() => setShowModal(false)}
               >
-                ×
+                // close
               </button>
             </div>
             <ul className="space-y-4 flex-1 overflow-y-auto">
               {modalUsuarios.map((u) => (
-                <li
-                  key={u.username || u.id}
-                  className="flex justify-between items-center p-3 bg-[#f0f2f5] rounded-xl shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <div>
-                    <p className="font-semibold text-[#075e54]">@{u.username || "Sem username"}</p>
-                    <p className="text-xs text-gray-500">
-                      Último login:{" "}
-                      {u.last_sign_in_at
-                        ? new Date(u.last_sign_in_at).toLocaleString()
-                        : "Nunca"}
-                    </p>
+                <li key={u.username || u.id} className="group p-4 bg-[#16161d] border border-cyan-900/30 rounded-lg hover:border-cyan-400/50 transition-all">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-mono text-cyan-400 text-sm">@{u.username || "unknown"}</p>
+                      <p className="text-[9px] text-gray-600 uppercase mt-1 tracking-widest">
+                        Last Active: {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString() : "???"}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => deletarUsuario(u.username)}
+                      className="opacity-0 group-hover:opacity-100 text-red-500 text-[10px] border border-red-900 px-2 py-1 rounded hover:bg-red-500 hover:text-white transition-all"
+                    >
+                      TERMINATE
+                    </button>
                   </div>
-                  <button
-                    onClick={() => deletarUsuario(u.username)}
-                    className="text-red-500 font-bold text-sm px-3 py-1 rounded-full border border-red-200 hover:bg-red-50 transition-colors"
-                  >
-                    Deletar
-                  </button>
                 </li>
               ))}
             </ul>
