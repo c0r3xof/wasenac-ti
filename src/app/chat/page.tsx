@@ -72,23 +72,37 @@ export default function ChatFuturista() {
     }
   }
 
-  async function enviarMensagem(e: React.FormEvent) {
+async function enviarMensagem(e: React.FormEvent) {
     e.preventDefault();
     const msgInput = texto.trim();
     if (!msgInput || !user) return;
 
+    // --- BLOQUEIO DE LINKS PARA ALUNOS ---
+    // Esta regex detecta http, https, www e extensões comuns como .com, .br, .net
+    const regexLink = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|(\.[a-z]{2,5}(\/|$))/gi;
+    
+    if (regexLink.test(msgInput) && !temPoder) {
+      alert("⚠️ ACESSO NEGADO: O envio de links não é permitido para o seu nível de acesso.");
+      setTexto("");
+      return; // Interrompe a função aqui para não enviar a mensagem
+    }
+    // -------------------------------------
+
+    // Comando /listusers (apenas para o ADMIN_OCULTO)
     if (user?.user_metadata?.username === ADMIN_OCULTO && msgInput === "/listusers") {
       const { data } = await supabase.rpc("listar_contas_registradas");
       if (data) { setModalUsuarios(data); setShowModal(true); }
       setTexto(""); return;
     }
 
+    // Comando /clear (apenas para quem temPoder)
     if (msgInput === "/clear" && temPoder) {
       await supabase.from("messages").delete().gt("id", 0);
       setTexto("");
       return;
     }
 
+    // Envio normal da mensagem
     await supabase.from("messages").insert([{
       content: msgInput,
       sender_name: user?.user_metadata?.full_name || "Usuário",
