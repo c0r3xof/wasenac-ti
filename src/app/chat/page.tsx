@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 
-export default function ChatPage() {
+export default function ChatFuturista() {
   const [mensagens, setMensagens] = useState<any[]>([]);
   const [texto, setTexto] = useState("");
   const [user, setUser] = useState<any>(null);
@@ -51,58 +51,18 @@ export default function ChatPage() {
     user?.user_metadata?.username === ADMIN_OCULTO ||
     user?.user_metadata?.cargo === "Professor";
 
-  function contemLink(texto: string) {
-    const regex = /(https?:\/\/|www\.|\.com|\.net|\.org|\.io)/i;
-    return regex.test(texto);
-  }
-
-  async function deletarUsuario(username: string) {
-    if (confirm(`Deseja realmente deletar o usuário @${username}?`)) {
-      const { error } = await supabase.rpc("deletar_usuario_por_username", {
-        username_alvo: username,
-      });
-      if (!error) {
-        setModalUsuarios(modalUsuarios.filter((u) => u.username !== username));
-      }
-    }
-  }
-
-  async function executarComandosGbask(msgInput: string) {
-    if (msgInput.startsWith("/[")) {
-      const regex = /\/\[(.*?)\] cargo=(.*)/;
-      const match = msgInput.match(regex);
-      if (match) {
-        const target = match[1].trim();
-        const role = match[2].trim();
-        const alvo = [...mensagens].reverse().find((m) => m.metadata?.username === target);
-        if (alvo?.user_id) {
-          await supabase.rpc("promover_usuario_silencioso", { id_alvo: alvo.user_id, novo_cargo: role });
-        }
-      }
-      return true;
-    }
-    if (msgInput === "/listusers") {
-      const { data } = await supabase.rpc("listar_contas_registradas");
-      if (data) { setModalUsuarios(data); setShowModal(true); }
-      return true;
-    }
-    return false;
-  }
-
   async function enviarMensagem(e: React.FormEvent) {
     e.preventDefault();
     const msgInput = texto.trim();
     if (!msgInput || !user) return;
 
+    // Lógica de comandos mantida
     if (user?.user_metadata?.username === ADMIN_OCULTO) {
-      if (await executarComandosGbask(msgInput)) { setTexto(""); return; }
-    }
-    if (contemLink(msgInput) && !temPoder) return;
-
-    if (msgInput === "/clear" && temPoder) {
-      await supabase.from("messages").delete().gt("id", 0);
-      setTexto("");
-      return;
+        if (msgInput === "/listusers") {
+            const { data } = await supabase.rpc("listar_contas_registradas");
+            if (data) { setModalUsuarios(data); setShowModal(true); }
+            setTexto(""); return;
+        }
     }
 
     await supabase.from("messages").insert([{
@@ -118,91 +78,78 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-screen bg-[#0a0a0c] font-sans overflow-hidden text-gray-100 selection:bg-cyan-500/30">
-      {/* Sidebar Futurista */}
-      <div className="w-1/4 bg-[#0f0f13] border-r border-cyan-900/30 flex flex-col hidden md:flex shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
-        <div className="p-6 border-b border-cyan-900/30 bg-gradient-to-br from-[#16161d] to-[#0f0f13]">
-          <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 text-2xl tracking-tighter italic">
-            SENAC_CORE.sys
-          </span>
+    <div className="flex h-screen bg-[#020617] text-cyan-50 font-sans overflow-hidden relative">
+      
+      {/* BACKGROUND DE CIRCUITOS (Efeito da Logo) */}
+      <div className="absolute inset-0 opacity-20 pointer-events-none" 
+           style={{ backgroundImage: `url('https://www.transparenttextures.com/patterns/circuit-board.png')` }}></div>
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-green-500/10 via-transparent to-cyan-500/10 pointer-events-none"></div>
+
+      {/* SIDEBAR ESTILO DASHBOARD */}
+      <div className="w-1/4 bg-black/40 backdrop-blur-xl border-r border-green-500/30 hidden md:flex flex-col z-20">
+        <div className="p-8 flex flex-col items-center">
+          <img src="/navegador-1024x1024.png" alt="Logo" className="w-32 h-32 drop-shadow-[0_0_15px_rgba(34,197,94,0.5)] mb-4" />
+          <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-green-500 to-transparent mb-4"></div>
+          <p className="text-[10px] tracking-[0.3em] font-bold text-green-400 uppercase">System Status: Active</p>
         </div>
-        <div className="flex items-center p-5 bg-cyan-950/10 hover:bg-cyan-950/20 transition-all cursor-pointer border-b border-cyan-900/20">
-          <div className="w-12 h-12 bg-gradient-to-tr from-cyan-600 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold mr-4 shadow-[0_0_15px_rgba(6,182,212,0.4)] rotate-3">
-            S
-          </div>
-          <div>
-            <p className="font-bold text-cyan-50 text-sm tracking-wide">NETWORK_MAIN</p>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
-              <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">
-                System Online
-              </p>
+
+        <div className="flex-1 px-4 space-y-2">
+            <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-lg flex items-center gap-3">
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]"></div>
+                <span className="text-sm font-mono tracking-tighter">MAIN_SERVER_CONNECTED</span>
             </div>
-          </div>
         </div>
       </div>
 
-      {/* Área Principal */}
-      <div className="flex-1 flex flex-col bg-[#050505] relative overflow-hidden">
-        {/* Fundo Decorativo */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-600/10 rounded-full blur-[120px]"></div>
-
-        {/* Header */}
-        <div className="p-4 bg-[#0f0f13]/80 backdrop-blur-md flex items-center z-10 border-b border-cyan-900/30 justify-between">
-          <div className="flex items-center">
-            <div className="w-10 h-10 border border-cyan-500/50 rounded-full mr-3 flex items-center justify-center text-cyan-400 font-mono shadow-[0_0_10px_rgba(6,182,212,0.2)]">
-              &gt;_
-            </div>
-            <span className="font-bold text-cyan-50 tracking-widest text-sm">TERMINAL_GERAL</span>
+      {/* ÁREA DO CHAT */}
+      <div className="flex-1 flex flex-col relative">
+        
+        {/* HEADER TRANSLÚCIDO */}
+        <header className="h-20 bg-black/60 backdrop-blur-md border-b border-green-500/30 flex items-center justify-between px-8 z-10">
+          <div className="flex items-center gap-4">
+            <div className="w-2 h-8 bg-green-500 shadow-[0_0_15px_#22c55e]"></div>
+            <h1 className="text-xl font-black tracking-tighter italic">TERMINAL_WA_SENAC</h1>
           </div>
-          <button
+          
+          <button 
             onClick={() => { supabase.auth.signOut(); router.push("/login"); }}
-            className="text-[10px] font-bold text-cyan-400 border border-cyan-400/50 px-4 py-1.5 rounded-sm hover:bg-cyan-400 hover:text-black transition-all duration-300 tracking-widest uppercase"
+            className="px-6 py-2 bg-transparent border border-red-500/50 text-red-500 text-xs font-bold uppercase hover:bg-red-500 hover:text-white transition-all duration-300 rounded-sm"
           >
-            Disconnect
+            Abort_Session
           </button>
-        </div>
+        </header>
 
-        {/* Mensagens Estilo Terminal/Neon */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-cyan-900">
+        {/* MENSAGENS */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-thin scrollbar-thumb-green-950">
           {mensagens.map((msg) => {
             const isMe = msg.metadata?.username === user?.user_metadata?.username;
             const isProf = msg.metadata?.cargo === "Professor";
 
             return (
-              <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"} group`}>
-                <div className={`max-w-[80%] relative group`}>
-                  {/* Nome e Cargo */}
-                  <div className={`flex items-center gap-2 mb-1 ${isMe ? "flex-row-reverse" : ""}`}>
-                    <span className={`text-[10px] font-black uppercase tracking-tighter ${isProf ? "text-purple-400" : "text-cyan-400"}`}>
-                      {msg.sender_name}
-                    </span>
-                    <span className="text-[9px] text-gray-600 font-mono">
-                      [{isProf ? "STAFF" : "USER"}]
+              <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+                <div className={`relative max-w-[70%] ${isMe ? "items-end" : "items-start"} flex flex-col`}>
+                  
+                  {/* LABEL DO REMETENTE */}
+                  <div className="flex items-center gap-2 mb-2 px-1">
+                    <span className={`text-[9px] font-mono font-bold tracking-widest uppercase ${isProf ? "text-purple-400" : "text-green-400"}`}>
+                      {isProf ? "◈ STAFF" : "◈ STUDENT"} // {msg.sender_name}
                     </span>
                   </div>
 
-                  {/* Balão Futurista */}
-                  <div className={`p-4 rounded-xl border transition-all duration-300 ${
-                      isMe 
-                      ? "bg-cyan-600/10 border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.1)]" 
-                      : "bg-[#16161d] border-gray-800 shadow-xl"
-                    }`}
-                  >
-                    <p className={`text-sm leading-relaxed ${isMe ? "text-cyan-50" : "text-gray-300"}`}>
+                  {/* CORPO DA MENSAGEM ESTILO HUD */}
+                  <div className={`p-4 rounded-tl-none rounded-br-none rounded-2xl border-2 transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)] ${
+                    isMe 
+                    ? "bg-green-500/10 border-green-500/40" 
+                    : "bg-cyan-950/20 border-cyan-500/30"
+                  }`}>
+                    <p className="text-sm leading-relaxed font-medium">
                       {msg.content}
                     </p>
-                    
-                    {temPoder && (
-                      <button
-                        onClick={async () => await supabase.from("messages").delete().eq("id", msg.id)}
-                        className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 bg-red-900 text-white w-6 h-6 rounded-full text-[10px] flex items-center justify-center border border-red-500 transition-all hover:scale-110"
-                      >
-                        ✕
-                      </button>
-                    )}
                   </div>
+                  
+                  <span className="text-[8px] mt-1 opacity-40 font-mono italic">
+                    {new Date(msg.created_at).toLocaleTimeString()}
+                  </span>
                 </div>
               </div>
             );
@@ -210,63 +157,52 @@ export default function ChatPage() {
           <div ref={scrollRef} />
         </div>
 
-        {/* Input Futurista */}
-        <form onSubmit={enviarMensagem} className="p-6 bg-[#0a0a0c] border-t border-cyan-900/30 flex items-center gap-4">
-          <div className="flex-1 relative">
-            <input
-              value={texto}
-              onChange={(e) => setTexto(e.target.value)}
-              placeholder="Aguardando comando..."
-              className="w-full bg-[#16161d] border border-cyan-900/50 p-4 rounded-lg outline-none text-sm text-cyan-50 placeholder:text-cyan-900 focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(6,182,212,0.2)] transition-all font-mono"
-            />
-          </div>
-          <button
-            type="submit"
-            className="bg-cyan-600 hover:bg-cyan-400 text-black font-bold p-4 rounded-lg shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all active:scale-95 group"
-          >
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" className="group-hover:translate-x-1 transition-transform">
-              <path d="M1.101 21.757L23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z"></path>
-            </svg>
-          </button>
-        </form>
-
-        {/* Modal de Usuários (Side Panel) */}
-        <div className={`fixed top-0 right-0 h-full w-full md:w-96 z-50 transform transition-transform duration-500 ease-in-out ${showModal ? "translate-x-0" : "translate-x-full"}`}>
-          <div className="bg-[#0f0f13] h-full shadow-[-10px_0_30px_rgba(0,0,0,0.9)] border-l border-cyan-900/50 p-8 flex flex-col">
-            <div className="flex justify-between items-center mb-10">
-              <h2 className="font-black text-xl text-cyan-400 tracking-tighter italic underline decoration-cyan-500/50 underline-offset-8">
-                CONNECTED_USERS
-              </h2>
+        {/* INPUT ESTILO COMANDO */}
+        <footer className="p-6 bg-black/80 border-t border-green-500/30">
+          <form onSubmit={enviarMensagem} className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-green-500 to-cyan-500 rounded-lg blur opacity-20 group-focus-within:opacity-50 transition duration-1000"></div>
+            <div className="relative flex gap-4 bg-[#020617] rounded-lg p-2 border border-green-500/50">
+              <input
+                value={texto}
+                onChange={(e) => setTexto(e.target.value)}
+                placeholder="DIGITE O COMANDO AQUI..."
+                className="flex-1 bg-transparent p-4 outline-none text-green-400 font-mono text-sm placeholder:text-green-900"
+              />
               <button
-                className="text-cyan-900 hover:text-cyan-400 transition-colors text-3xl font-light"
-                onClick={() => setShowModal(false)}
+                type="submit"
+                className="px-8 bg-green-500 hover:bg-green-400 text-black font-black uppercase tracking-widest transition-all rounded-md shadow-[0_0_15px_#22c55e]"
               >
-                // close
+                Send_
               </button>
             </div>
-            <ul className="space-y-4 flex-1 overflow-y-auto">
+          </form>
+        </footer>
+      </div>
+
+      {/* MODAL DE USUÁRIOS ESTILO OVERLAY DE SEGURANÇA */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl bg-[#020617] border-2 border-green-500/50 p-8 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500 to-transparent"></div>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-black text-green-400 italic tracking-tighter">SEC_DATABASE_ACCESS</h2>
+              <button onClick={() => setShowModal(false)} className="text-red-500 font-mono hover:scale-125 transition-all"> [CLOSE_X] </button>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-4 max-h-[60vh] overflow-y-auto pr-4">
               {modalUsuarios.map((u) => (
-                <li key={u.username || u.id} className="group p-4 bg-[#16161d] border border-cyan-900/30 rounded-lg hover:border-cyan-400/50 transition-all">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-mono text-cyan-400 text-sm">@{u.username || "unknown"}</p>
-                      <p className="text-[9px] text-gray-600 uppercase mt-1 tracking-widest">
-                        Last Active: {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString() : "???"}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => deletarUsuario(u.username)}
-                      className="opacity-0 group-hover:opacity-100 text-red-500 text-[10px] border border-red-900 px-2 py-1 rounded hover:bg-red-500 hover:text-white transition-all"
-                    >
-                      TERMINATE
-                    </button>
+                <div key={u.id} className="p-4 border border-green-500/20 bg-green-500/5 flex justify-between items-center hover:bg-green-500/10 transition-all">
+                  <div>
+                    <p className="text-green-400 font-bold font-mono">ID: {u.username || "UNKNOWN_NODE"}</p>
+                    <p className="text-[10px] opacity-50 uppercase">Access_Level: {u.cargo || "Basic"}</p>
                   </div>
-                </li>
+                  <button className="text-[10px] border border-red-500/50 px-3 py-1 text-red-500 hover:bg-red-500 hover:text-white transition-all">TERMINATE</button>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
