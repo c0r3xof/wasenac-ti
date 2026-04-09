@@ -101,7 +101,7 @@ export default function ChatFuturista() {
 
       <main className="flex-1 flex flex-col relative">
         <header className="h-20 bg-black/60 backdrop-blur-md border-b border-green-500/30 flex items-center justify-between px-8 z-10">
-          <h1 className="text-xl font-black tracking-tighter italic text-green-500">WaSenac-Ti</h1>
+          <h1 className="text-xl font-black tracking-tighter italic text-green-500">CHAT</h1>
           <button onClick={() => { supabase.auth.signOut(); router.push("/login"); }} className="border border-red-500/50 text-red-500 px-6 py-2 text-xs hover:bg-red-500 hover:text-white transition-all uppercase font-bold tracking-widest rounded-md">
             Sair
           </button>
@@ -151,7 +151,7 @@ export default function ChatFuturista() {
           <div className="absolute inset-0 bg-black/10 backdrop-blur-2xl transition-opacity" onClick={() => setShowModal(false)}></div>
           <div className="relative w-full max-w-3xl bg-black/70 border border-green-500/40 rounded-3xl shadow-[0_0_60px_rgba(34,197,94,0.2)] flex flex-col max-h-[80vh] overflow-hidden">
             <div className="p-6 border-b border-green-500/20 flex justify-between items-center bg-green-500/5">
-              <h2 className="text-xl font-black text-green-400 italic tracking-widest">USER_REGISTRY_DATABASE</h2>
+              <h2 className="text-xl font-black text-green-400 italic tracking-widest">Contas Regristradas</h2>
               <button onClick={() => setShowModal(false)} className="text-green-500 border border-green-500/30 px-3 py-1 hover:bg-green-500 hover:text-black transition-all font-mono">X</button>
             </div>
             <div className="flex-1 overflow-y-auto p-6">
@@ -171,7 +171,7 @@ export default function ChatFuturista() {
                         {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString('pt-BR') : "DISCONNECTED"}
                       </td>
                       <td className="px-4 py-4 text-right">
-                        <button className="text-[10px] font-bold text-red-500/40 hover:text-red-500 uppercase tracking-tighter">[Terminate]</button>
+                        <button className="text-[10px] font-bold text-red-500/40 hover:text-red-500 uppercase tracking-tighter">[Deletar]</button>
                       </td>
                     </tr>
                   ))}
